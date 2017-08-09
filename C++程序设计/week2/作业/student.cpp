@@ -12,6 +12,7 @@ class information
     {
       for(int i=0;i<k;i++)
        name[i]=a[i];
+      name[k-1]='\0';
     }
     void setage(int age_)
     {
@@ -27,7 +28,7 @@ class information
     }
     void out()
     {
-      cout<<name<<age<<","<<id<<","<<score<<endl;
+      cout<<name<<','<<age<<","<<id<<","<<score<<endl;
     }
 };
 
@@ -45,7 +46,6 @@ int main()
     if(name[i]==',')
       break;
   }
-  name[k]='\0';
   cin>>age>>c>>id>>c>>s1>>c>>s2>>c>>s3>>c>>s4;
   s.setname(name,k);
   s.setage(age);
