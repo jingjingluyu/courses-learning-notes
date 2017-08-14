@@ -13,8 +13,10 @@ class Complex{
 };
 int main(){
     Complex c1(7,8);
-    Complex c2=12; //初始化，12作为参数传给i
-    c1=9; //9被自动转换成一个临时对象Complex对象，赋值给c1
+    Complex c2=12; //"="是初始化，不是赋值。初始化过程，调用类型转换构造函数不生成临时对象。
+                   //只会把12作为参数传给int i
+    c1=9; //是赋值语句。等号两边不同类型，c1是Complex类型，9是整型常量。
+          //调用类型转换构造函数，首先生成临时对象，生成成一个临时对象Complex。对象9被自动转换成一个临时对象Complex对象，赋值给c1
     cout<<c1.real<<","<<c1.imag<<endl;//输出IntConstructor called IntConstructor called 9，0
     return 0;
 }
