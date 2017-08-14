@@ -6,7 +6,7 @@ private:
  int radius;  //半径
  int width; //宽度
 public:
- CTye(int r int w):radius(r),width(w){ } //初始化，radius=r,width=w
+ CTye(int r int w):radius(r),width(w){ } //初始化列表，类似radius=r,width=w。
  };
  class CEngine{     //引擎类
  };
