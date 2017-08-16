@@ -37,7 +37,7 @@ public:
   Complex(double r=0,double i=0):real(r),imag(i){}; //构造函数赋初值
   friend ostream & operator<<(ostream & os,const Complex & c);
   friend istream & operator>>(istream & is,const Complex & c);
-}
+};
 ostream & operator<<(ostream & os,const Complex & c)
 {
   os<<c.real<<"+"<<c.imag<<"i";//以“a+bi”形式输出
