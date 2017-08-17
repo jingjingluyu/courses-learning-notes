@@ -15,11 +15,11 @@ public:
   ~String();
    };
 //重载’=’->obj="hello"能够成立
-char * String::operator=(const char * s){ //指针读取不能修改
+char * String::operator=(const char * s){ //把hello地址对应的指针char *s传进来，指针读取不能修改
   if(str) //判断一下指针是否为空
   delete []str; //不为空delete一下
   if(s){ //s不为NULL才会只想拷贝
-    dtr=new char[strlen(s)+1];
+    dtr=new char[strlen(s)+1];//加1是为了放/0
     strcpy(str,s);
   }
   else
