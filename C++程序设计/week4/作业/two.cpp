@@ -9,7 +9,7 @@ int ReturnVal(){return nVal;}
 //在此处补充你的代码
 MyInt & operator-(int a)  //对减号进行重载
 {
-this->nVal=this->nVal-a;
+nVal-=a;
 return *this;
 }
 };
