@@ -24,7 +24,7 @@ int main()
 */
 #include<stdio.h>
 #include<stdlib.h>
-int MyCompare(const void *elem1,const void *elem2)
+int MyCompare(const void *elem1,const void *elem2) //将比较的指的地址传给*elem1 *elem2
 {
   unsigned int *p1,*p2;
   p1=(unsigned int *)elem1; //"* elem1"非法 强制类型转换
