@@ -13,7 +13,7 @@ public:
  class CCar{   //汽车类->"封闭类"
  private:
    int price;  //价格
-   CTyre tyre;
+   CTyre tyre; //不同类的对象
    CEngine engine;
  public:
    CCar(int p,int tr,int tw);
@@ -23,6 +23,8 @@ public:
  };
  int main(){
    CCar car(20000,17,225);
+   //如果CCar类不定义构造函数，则CCar car; error 编译出错 编译器不知道 car.tyre该如何初始化
+//car.engine 的初始化没有问题，本身没有参数：用默认构造函数
    return 0;
  }
  /*********************************************************************************/
