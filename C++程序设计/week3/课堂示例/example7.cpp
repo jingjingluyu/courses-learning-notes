@@ -72,9 +72,11 @@ public:
 int main()
 {
   A *p=NULL; //空指针p未指向任何对象
-  p->Hello(); //Hello(p);
+  p->Hello(); //用空指针调用 Hello .调用hello 让结果作用在p所指的对象上面 Hello(p);
 }//输出hello
 
-/*但是void Hello(A *this){cout<<this->i<<"hello"<<endl;}
-错误，this是空指针没法指向i
+/*但是
+void Hello(){cout<<i<<"hello"<<endl;}
+void Hello(A *this){cout<<this->i<<"hello"<<endl;}
+错误，this是空指针没有指向任何值，this->i找this指向的i就找不到
 */
