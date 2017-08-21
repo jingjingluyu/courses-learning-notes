@@ -3,7 +3,7 @@ class CRectangle
 {
 private:
   int w,h;
-  static int nTotalArea;//静态成员变量
+  static int nTotalArea;//静态成员变量，为所有对所有共享，改了a1的nTotalArea，a2的nTotalArea也会改变
   static int nTotalNumber;
 public:
   CRectangle(int w_,int h_);
@@ -51,9 +51,10 @@ int main()
   CRectangle r1(3,3),r2(2,2);
   //cout<<CRectangle::nTotalNumber;// Wrong,私有
   CRectangle::PrintTotal();//输出2,13
-  r1.PrintTotal();//不意味着PrintTotal作用在r1上面 输出2，13
+  r1.PrintTotal();//不意味着PrintTotal作用在r1上面  与上面的写法等价 输出2，13
   return 0;
 }
+//编写复制构造函数解决问题
 CRectangle::CRectangle(CRectangle & r)
 {
   w=r.w;h=r.h;
