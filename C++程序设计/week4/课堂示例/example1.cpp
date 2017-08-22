@@ -14,7 +14,7 @@ Complex operator+(const Complex & a,const Complex & b)
   return Complex(a.real+b.real,a.imaginary+b.imaginary);
 } //类名(参数表)就代表一个对象
 Complex a(1,2),b(2,3),c;
-c=a+b;//相当于，operator+(a+b)
+c=a+b;//相当于，operator+(a，b)
 /*重载为普通函数时，参数个数为运算符目数*/
 /*******************************************************************************/
 /*运算符重载为成员函数*/
