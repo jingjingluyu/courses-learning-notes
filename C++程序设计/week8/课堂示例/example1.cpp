@@ -22,6 +22,7 @@ int main(){
     cout<<*i<<","; //100,100,100,100
 }
 /**********************************************************************/
+/*第二课*/
 /*遍历vector*/
 vector<int> v(100); //整形数组里面有100个元素
 int i;
@@ -62,7 +63,15 @@ int main(){
   v.push_back(1); v.push_back(2);
   v.push_back(3); v.push_back(4);
   vector<int>::iterator p;
-  p=find(v.begin(),v.end(),3);
+  p=find(v.begin(),v.end(),3); //在整个v容器中找3
   if(p!=v.end())
-    cout<<*p<<endl;
+    cout<<*p<<endl; //3
+  p=find(v.begin(),v.end(),9);
+  if(p==v.end())
+    cout<<"not found"<<endl; //not found
+  p=find(v.begin()+1,v.end()-2,1); //整个容器：[1,2,3,4],查找区间：[2,3)
+  if(p!=v.end())
+    cout<<*p<<endl; //3
+  int *pp=find(array,array+4,20); //数组名是迭代器
+  cout<<*pp<<endl; //20
 }
