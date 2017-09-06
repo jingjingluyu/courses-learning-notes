@@ -29,7 +29,7 @@ int main(){
   while(next_permutation(szStr,szStr+3)){
     cout<<szStr<<endl;
   }
-  sort(str.begin(),str.end());//sort后又变为132输出
+  sort(str.begin(),str.end());//sort后又变为123输出
   cout<<"****"<<endl;
   while (next_permutation(str.begin(),str.end())) {
     cout<<str<<endl;
