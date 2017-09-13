@@ -1,0 +1,109 @@
+%-*- coding: UTF-8 -*-
+\documentclass[UTF8]{ctexart}
+\usepackage{geometry}
+\geometry{a4paper,centering,scale=0.8}
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{textcomp}
+\usepackage{amsthm}
+\usepackage{amssymb}
+
+\title{\heiti Python 基础篇}
+\author{卢婧宇}
+
+\begin{document}
+\maketitle
+\tableofcontents
+
+\newpage
+\section{介绍}
+\subsection{Python是什么}
+Python是一门高级程序设计语言，它的创作者是Guido van Rossum,在1989年圣诞节的时候编写。
+\subsection{Python的logo}
+蟒蛇，Python是一个马戏团Monty Python的名字，Guido喜欢看它的演出。
+\subsection{Python的特点}
+1.面向对象
+\begin{itemize}
+  \item Python完全支持OOP
+  \item 也同时支持面向过程
+\end{itemize}
+
+2.免费
+\begin{itemize}
+  \item Python完全免费
+  \item 但同时有强大的支持
+\end{itemize}
+
+3.跨平台
+\begin{itemize}
+  \item 有标准C编写，支持多种平台
+  \item 一次编写，处处运行
+\end{itemize}
+
+4.功能强大
+\begin{itemize}
+  \item 多种数据类型，丰富的运算
+  \item 动态类型,意味着可以直接使用对象
+  \item 垃圾自动回收
+  \item 众多的模块工具
+\end{itemize}
+
+5.胶水性
+\begin{itemize}
+  \item 可以轻易的和其他语言编写粘连在一起
+\end{itemize}
+
+6.简约不简单
+\begin{itemize}
+   \item  简单易学，代码质量依然可以保障。
+\end{itemize}
+\section{Python的linux开发环境}
+\subsection{Python的安装}
+系统自带,终端输入：python -V,查看版本号
+\subsection{Python程序运行}
+第一种方式，基于解释器方式，交互模式
+
+第二种方式，基于程序文件方式：编写hello.py代码文件。
+
+\begin{itemize}
+\item 执行方式一：命令调用文件 python hello.py
+
+\item 执行方式二：让文件自己执行 chmod +x hello.py  ./hello.py 在第一行加上组织头 \#!/usr/bin/python。不可直接执行，没有执行权限
+
+\item 执行方式三：以模块的方式 python -m hello
+
+\item 执行方式四：在文件开头写 \#!/usr/bin/env python 兼容性更好
+\end{itemize}
+
+control + d 或者 exit()退出。
+\section{Python基础概述——面向过程}
+\subsection{数据类型}
+基本数据类型：数值、字符串、布尔、None
+
+复合数据类型：list、tuple、dict
+\subsection{对应数据类型运算}
+基本运算：算数、关系、逻辑运算
+\subsection{流程控制}
+顺序、分支、异常处理、循环
+\subsection{复合数据类型操作 列表}
+基本方法、遍历、切片、解析列表
+\subsection{复合数据类型操作 元祖}
+遍历、切片、解包
+\subsection{数据类型间操作}
+Boolean、List、tuple、dict
+\subsection{函数}
+函数定义、函数使用、变量的作用域、参数、匿名函数
+\subsection{关于排列}
+列表、字典（无序的）
+\subsection{常用的内置函数}
+Map、Filter、zip
+\subsection{文件操作}
+将数据保存起来。文件打开模式、文件的基本读写、文件的指针操作
+\subsection{模块包管理}
+不同的程序文件可以放置在不同的位置，起不同的名字。
+包模块结构、导入本模块外资源的方式
+
+
+
+
+\end{document}
