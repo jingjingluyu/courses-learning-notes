@@ -628,7 +628,395 @@ None
 \subsection{深入Python函数定义}
 在Python中，你也可以定义包含若干参数的函数。这里有三种可用的形式，也可以混合使用。
 \subsubsection{默认参数值}
-最常用的一种形式是为一个或多个参数指定默认值。这会创建一个可以使用比定义时允许的参数更少的参数调用的函数，例如
+最常用的一种形式是为一个或多个参数指定默认值。这会创建一个可以使用比定义时允许的参数更少的参数调用的函数，例如:
+\begin{minted}{python}
+>>> def ask_ok(prompt, retries=4, complaint='Yes or no, please!'):
+...     while True:
+...             ok = input(prompt)
+...             if ok in ('y', 'ye', 'yes'):
+...                     return Ture
+...             if ok in ('n', 'no', 'nop', 'nope'):
+...                     return False
+...             retries = retries - 1
+...             if retries < 0:
+...                     raise OSError('uncooperat user')
+...             print(complaint)
+\end{minted}
+
+这个函数可以通过几种不同的方式调用：
+\begin{itemize}
+  \item 只给出必要的参数：ask\_ok $($`Do you really want to quit?'$)$
+  \item 给出一个可选的参数：
+
+  ask\_ok$($`Ok to overwrite the file?', 2$)$
+  \item 或者给出所有的参数：
+
+  ask\_ok$($`OK to overwrite the file?', 2, `Come only yes or no!'$)$
+\end{itemize}
+
+这个例子还介绍了 in 关键字。它测定序列中是否包含某个确定的值。
+
+默认值在函数定义作用域被解析，如下所示：
+\begin{minted}{python}
+>>> i = 5
+>>> def f(arg = i):
+...     print(arg)
+...
+>>> i = 6
+>>> f()
+5
+\end{minted}
+
+重要警告：默认值只被赋值一次。这使得当默认值是可变对象时会有所不同，比如列表、字典或者大多数类的实例。
+例如，下面的函数在后续调用过程中会累积（前面）传给它的参数：
+\begin{minted}{python}
+>>> def f(a, L=[]):
+...     L.append(a)
+...     return L
+...
+>>> print(f(1))
+[1]
+>>> print(f(2))
+[1, 2]
+>>> print(f(3))
+[1, 2, 3]
+\end{minted}
+
+如果你不想让默认值在后续调用中累积，你可以像下面一样定义函数：
+\begin{minted}{python}
+>>> def f(a, L=None):
+...     if L is None:
+...             L = []
+...     L.append (a)
+...     return L
+\end{minted}
+
+\subsubsection{关键字参数}
+函数可以通过关键字参数的形式来调用，形如 keyword = value。例如，以下的函数：
+\begin{minted}{python}
+>>> def parrot(voltage, state='a stiff', action='voom', type='Norwegian Blue'):
+...     print("-- This parrot wouldn't", action, end=' ')
+...     print("if you put", voltage, "volts through it.")
+...     print("-- Lovely plumage, the", type)
+...     print("-- It's", state, "!")
+\end{minted}
+
+接受一个必选参数（voltage）以及三个可选参数（state, action和type）。可以用以下的任一方法调用：
+\begin{minted}{python}
+>>> parrot(1000)                      # 1 positional argument
+-- This parrot wouldn't voom if you put 1000 volts through it.
+-- Lovely plumage, the Norwegian Blue
+-- It's a stiff !
+>>> parrot(voltage=1000)              # 1 keyword argument
+-- This parrot wouldn't voom if you put 1000 volts through it.
+-- Lovely plumage, the Norwegian Blue
+-- It's a stiff !
+>>> parrot(voltage=1000000, action='VOOOOOM')  # 2 keyword arguments
+-- This parrot wouldn't VOOOOOM if you put 1000000 volts through it.
+-- Lovely plumage, the Norwegian Blue
+-- It's a stiff !
+>>> parrot(action='VOOOOOM',voltage=1000000)   # 2 keyword arguments
+-- This parrot wouldn't VOOOOOM if you put 1000000 volts through it.
+-- Lovely plumage, the Norwegian Blue
+-- It's a stiff !
+>>> parrot('a thousand', state='pushing up the daisies')  # 1 positional, 1 keyword
+-- This parrot wouldn't voom if you put a thousand volts through it.
+-- Lovely plumage, the Norwegian Blue
+-- It's pushing up the daisies !
+\end{minted}
+
+不过以下几种调用是无效的：
+\begin{minted}{python}
+>>> parrot()                     # requried argument missing
+>>> parrot(voltage=5.0, 'dead')  # non-keyword argument after a keyword argument
+>>> parrot(110, voltage=220)     # duplicate value for the same argument
+>>> parrot(actor='John Cleese')  # unknow keyword argument
+\end{minted}
+
+在函数调用中，关键字的参数必须跟随在位置参数的后面。传递的所有关键字参数必须与函数接受的某个参数相匹配
+（例如 actor 不是 parrot 函数的有效参数），它们的顺序并不重要。这也包括非可选参数（例如 parrot(voltage=100)也是有效的）。
+任何参数都不可以多次赋值。下面的示例由于这种限制将失败:
+\begin{minted}{python}
+>>> def function(a):
+...     pass
+...
+>>> function(0, a=0)
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+TypeError: function() got multiple values for argument 'a'
+\end{minted}
+
+引入一个形如 $**$name 的参数时，它接收一个字典（参见Mapping Types-dict）,该字典包含了所有未出现在形式参数列表中的关键字参数。
+这里可能还会组合使用一个形如 $*$name （下一小节详细介绍）的形式参数，它接收一个元组（下一节中会详细介绍），包含了所有没有出现在形式参数
+列表中的参数值（ $*$name必须在 $**$name之前出现）。例如，我们这样定义一个函数：
+\begin{minted}{python}
+>>> def cheeseshop(kind, *arguments, **keywords):
+...     print("-- Do you have any", kind, "?")
+...     print("-- I'm sorry. we're all out of", kind)
+...     for arg in arguments:
+...             print(arg)
+...     print("-" * 40)
+...     keys = sorted(keywords.keys())
+...     for kw in keys:
+...             print(kw, ":", keywords[kw])
+\end{minted}
+
+它可以像这样调用：
+\begin{minted}{python}
+>>> cheeseshop("Limburger", "It's very runny, sir.",
+...             "It's really very, VERY runny, sir.",
+...             shopkeeper="Michael Palin."
+...             client="John Cleese",
+...             sketch="Cheese Shop Sketch")
+\end{minted}
+
+当然它会按如下内容打印：
+\begin{minted}{python}
+-- Do you have any Limburger ?
+-- I'm sorry, we're all out of Limburger
+It's very runny, sir.
+It's really very, VERY runny, sir.
+----------------------------------------
+client : John Cleese
+shopkeeper : Michael Palin
+sketch : Cheese Shop Sketch
+\end{minted}
+
+注意在打印关键字参数之前，通过对关键字字典 keys() 方法的结果进行排序，生成了关键字参数名的列表；
+如果不这样做，打印出来的参数顺序是未定义的。
+
+\subsubsection{可变参数列表}
+最后，一个最不常用的选择是可以让函数调用可变个数的参数。这些参数被包装进一个元祖（参见 元祖和序列）。
+在这个可变个数的参数之前，可以有零到多个普通的参数：
+\begin{minted}{python}
+>>> def concat(*args, sep="/"):
+...     return sep.join(args)
+...
+>>> concat("earth", "mars", "venus")
+'earth/mars/venus'
+>>> concat("earth", "mars", "venus", sep=".")
+'earth.mars.venus'
+\end{minted}
+\subsubsection{参数列表的拆分}
+另一种相反的情况：当你要传递的参数已经是一个列表，但要调用的函数却接受分开一个个的参数值。
+这时候你要把已有的列表拆开来。例如内建函数 range()需要要独立的 start, stop参数。
+你可以在调用函数时加一个$*$操作符来自动把参数列表拆开：
+\begin{minted}{python}
+>>> list(range(3, 6))   # normal call with separate arguments
+[3, 4, 5]
+>>> args = [3, 6]
+>>> list(range(*args))  # call with arguments unpacked from a list
+[3, 4, 5]
+\end{minted}
+
+以同样的方法，可以使用$**$操作符拆分关键字参数为字典：
+\begin{minted}{python}
+>>> def parrot(voltage, state='a stiff', action='voom'):
+...     print("-- This parrto wouldn't", action, end=' ')
+...     print("if you put", voltage, "volts through it.", end=' ')
+...     print("E's", state, "!")
+...
+>>> d = {"voltage": "four million", "state": "bleedin' demised", "action": "VOOM"}
+>>> parrot(**d)
+-- This parrto wouldn't VOOM if you put four million volts through it. E's bleedin' demised !
+\end{minted}
+
+\subsubsection{Lambda形式}
+出于实际需要，有几种通常在函数式编程语言例如Lisp中出现的功能加入到了Python。通过lambda关键字，
+可以创建短小的匿名函数。这里有一个函数返回它的两个参数的和：lambda a, b: a+b。Lambda形式可以用于任何
+需要的函数对象。出于语法限制，它们只能有一个单独的表达式。
+\begin{minted}{python}
+>>> def make_incrementor(n):
+...     return lambda x: x + n
+...
+>>> f = make_incrementor(42)
+>>> f(0)
+42
+>>> f(1)
+43
+\end{minted}
+
+上面的示例使用lambda表达式返回一个函数。另一个用途是将一个小函数作为参数传递：
+\begin{minted}{python}
+>>> pairs = [(1, 'one'), (2, 'two'), (3, 'three'), (4, 'four')]
+>>> pairs.sort(key=lambda pair: pair[1])
+>>> pairs
+[(4, 'four'), (1, 'one'), (3, 'three'), (2, 'two')]
+\end{minted}
+
+\subsubsection{文档字符串}
+这里介绍的文档字符串的概念和格式。
+
+第一行应该是关于对象用途的简介。简短起见，不用明确的陈述对象名或类型，
+因为它们可以从别的途径了解到（除非这个名字碰巧就是描述这个函数操作的动词）。这一行应该
+以大写字母开头，以句号结尾。
+
+如果文档字符串有多行，第二行应该空出来，与接下俩的详细描述明确分隔。接下来的文档婴孩有一
+或多段描述对象的调用约定、边界效应等。
+
+Python的解释器不会从多行的文档字符串中取除缩进，所以必要的时候应当自己清除缩进。这符合通常的习惯。
+第一行之后的第一个非空行决定了整个文档的缩进格式。（我们不用第一行是因为它通常紧靠着起始的引号，缩进
+的话，所有的留白都应该清除掉。留白的长度应当等于扩展制表符的宽度（通常是8个空格）。
+
+以下是一个多行文档字符串的示例：
+\begin{minted}{python}
+>>> def my_function():
+...     """Do nothing, but document it.
+...
+...     No, really, it doesn't do anything.
+...     """
+...     pass
+...
+>>> print(my_function.__doc__)
+Do nothing, but document it.
+
+	No, really, it doesn't do anything.
+\end{minted}
+
+\section{数据结构}
+\subsection{关于列表的更多的内容}
+Python的列表数据类型包含更多的方法。这里是所有的列表对象方法：
+\begin{itemize}
+  \item list.append(x) 把一个元素添加到列表的结尾，相当于 a[len(a):] = [x]
+  \item list.extend(L) 将一个给定列表中的所有元素都添加到另一个列表中，相当于 a[len(a):]=L
+  \item list.insert(i,x) 在指定位置插入一个元素。第一个参数是准备插入到其前面的那个元素的索引，
+  例如 a.insert(0, x)会插入到整个列表之前，而 a.insert(len(a), x)相当于 a.append(x)。
+  \item list.remove(x) 删除列表中值为x的第一个元素。如果没有这样的元素，就会返回一个错误。
+  \item list.pop([i]) 从列表的指定位置删除元素，并将其返回。如果没有指定索引，a.pop()返回最后一个元素。
+  元素随机从列表中被删除（方法中i两边的方括号表示这个参数是可选的，而不是要求你的输入一对方括号，你会经常
+  在Python库参考手册中遇到这样的标记）。
+  \item list.clear() 从列表中删除所有元素。相当于 del a[:]。
+  \item list.count(x) 返回x在列表中出现的次数
+  \item list.index(x) 返回列表中第一个值为x的元素的索引。如果没有匹配的元素就会返回一个错误。
+  \item list.sort() 对类表中的元素就地进行排列。
+  \item list.reverse() 就地倒排列表中的元素。
+  \item list.copy() 返回列表的一个浅拷贝。等同于 a[:]。
+\end{itemize}
+
+下面这个示例演示了列表的大部分方法：
+\begin{minted}{python}
+>>> a = [66.25, 333, 333, 1, 1234.5]
+>>> print(a.count(333), a.count(66.25), a.count('x'))
+2 1 0
+>>> a.insert(2, -1)
+>>> a.append(333)
+>>> a
+[66.25, 333, -1, 333, 1, 1234.5, 333]
+>>> a.index(333)
+1
+>>> a.remove(333)
+>>> a
+[66.25, -1, 333, 1, 1234.5, 333]
+>>> a.reverse()
+>>> a
+[333, 1234.5, 1, 333, -1, 66.25]
+>>> a.sort()
+>>> a
+[-1, 1, 66.25, 333, 333, 1234.5]
+>>> a.pop()
+1234.5
+>>> a
+[-1, 1, 66.25, 333, 333]
+\end{minted}
+
+也许大家会发现像insert, remove 或者sort这些修改列表的方法没有打印返回值——它们
+返回None。在python中对所有可变的数据类型这是统一的设计原则。
+\subsubsection{把列表当作堆栈使用}
+\subsubsection{把列表当做队列使用}
+\subsubsection{列表推导式}
+\subsubsection{嵌套的列表推倒式}
+\subsection{del语句}
+有个方法可以从类表中按给定的索引而不是值来删除一个子项：del语句。它不同于有返回值的
+pop()方法。语句del还可以从列表中删除切片或清空整个列表（我们以前介绍过一个方法是将空列表
+赋值给列表的切片）。例如：
+\begin{minted}{python}
+>>> a = [-1, 1, 66.25, 333, 333, 1234.5]
+>>> del a[0]
+>>> a
+[1, 66.25, 333, 333, 1234.5]
+>>> del a[2:4]
+>>> a
+[1, 66.25, 1234.5]
+>>> del a[:]
+>>> a
+[]
+\end{minted}
+
+del也可以删除整个变量：
+\begin{minted}{python}
+>>> del a
+>>> a
+\end{minted}
+
+此后再引用命名a会引发错误（直到另一个值赋给它为止）。我们在后面的内容中可以看到del的其它用法。
+\subsection{元组和序列}
+我们知道列表和字符串有很多通用的属性，例如索引和切割操作。它们是序列类型（参见Sequence Types -
+list,tuple,range) 中的两种。因为Python是一个在不停进化的语言，也可能会加入其它的序列类型，这里
+介绍另一种标准序列类型：元组。
+
+一个元组由数个逗号分隔的值组成，例如：
+\begin{minted}{python}
+>>> t = 12345, 54321, 'hello!'
+>>> t[0]
+12345
+>>> t
+(12345, 54321, 'hello!')
+>>> # Tuples may be nested:
+... u = t, (1, 2, 3, 4, 5)
+>>> u
+((12345, 54321, 'hello!'), (1, 2, 3, 4, 5))
+>>> # Tuples are immutable:
+... t[0] = 88888
+Traceback (most recent call last):
+  File "<stdin>", line 2, in <module>
+TypeError: 'tuple' object does not support item assignment
+>>> # but they can contain mutable objects:
+... v = ([1, 2, 3], [3, 2, 1])
+>>> v
+([1, 2, 3], [3, 2, 1])
+\end{minted}
+正如你所见，元组在输出时总是有括号的，以便于正确表达嵌套结构。在输入时
+可以有或没有括号，不过经常括号都是必须的（如果元组是一个更大的表达式的一部分）。
+不能给元组的一个独立的元素赋值（尽管你可以通过联接和切割来模拟）。还可以创建包含可变
+对象的元组，例如列表。
+
+虽然元组和列表很类似，它们经常被用来在不同的情况和不同的用途。元组有很多用途。例如（x,y）
+坐标对，数据库中的员工记录等等。元组就像字符串，不可变的。通常包含不同种类的元素并通过分拆（参阅
+本节后面的内容）或索引访问（如果是namedtuples,甚至可以通过属性）。列表是可变的，它们的元素通常是相同类型的并通过迭代访问。
+
+一个特殊的问题是构造包含零个或一个元素的元组：为了适应这种情况，语法上有一些额外的改变。一对空的括号可以创建空元组；
+要创建一个单元素元组可以在值后面跟一个逗号（在括号中放入一个单值不够明确）。丑陋，但是有效。例如：
+\begin{minted}{python}
+>>> empty = ()
+>>> singleton = 'hello',     # <-- note trailing comma
+>>> len(empty)
+0
+>>> len(singleton)
+1
+>>> singleton
+('hello',)
+\end{minted}
+
+语句 t = 12345, 54321, `hello!' 是元组封装（tuple packing）的一个例子：值12345，54321和`hello'
+被封装进元组。其逆操作可能是这样：
+\begin{minted}{python}
+>>> x, y, z = t
+\end{minted}
+
+这个调用等号右边可以是任何线性序列，称之为序列拆分非常恰当。序列拆封要企业左侧的变量数目与序列的元素个数相同。要
+注意的是可变参数（multiple assignment)其实只是元组封装的序列拆封的一个结合。
+
+\subsection{集合}
+Python还包含了一个数据类型--set（集合）。集合是一个无序不重复元素的集。基本功能包括关系测试和消除重复元素。集合对象还支持
+union（联合），intersection（交），difference（差）和sysmmetric difference（对称差集）等数学运算。
+
+大括号或 set() 函数可以用来创建集合。注意：想要创建空集合，你必须要使用 set() 而不是 {}。
+后者用于创建空字典。以下是一个简单的演示：
+\begin{minted}{python}
+>>> basket = {'apple', 'orange', 'apple', 'pear', 'orange', 'banana'}
+>>> print(basket)                     # show that duplicates have been removed
+{'pear', 'apple', 'orange', 'banana'}
+>>> a = set('abracadabra')
 
 
 \end{document}
