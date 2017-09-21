@@ -1697,9 +1697,9 @@ sound/                          Top-level package
 文件即可。当然他也可以执行包的初始化代码，或者定义稍后介绍的\_\_all\_\_变量。
 
 用户可以每次只导入包里的特定模块，例如：
-\begin{minted}{pyhton}
+
 import sound.effects.echo
-\end{minted}
+
 
 这样就导入了 sound.effectd.echo 子模块。它必须通过完整的名称来引用：
 \begin{minted}{python}
@@ -1734,7 +1734,249 @@ import 语句首先核对是否包中有这个子项，如果没有，它假定�
 但不能是前面子项中定义的类、函数或变量。
 
 \subsubsection{从*导入包}
+当用户写下from sound.effects import \* 时会发生什么事？理想中，总是希望在文件系统中找出包中所有的子模块，
+然后导入它们。这可能会花掉很长时间，并且出现期待之外的边界效应，导出了希望只能显示导入的包。
+
+对于包的作者来说唯一的解决方案就是提供一个明确的包索引。import语句按如下条件进行转换：执行 from package import \*  时，如果包中的
+\_\_init\_\_.py 代码定义了一个名为\_\_all\_\_的列表，就会按照列表中给出的模块名进行导入。新版本的包发布时作者可以任意更新这个列表。
+如果包作者不想import\*的时候导入他们的包中所有模块,那么也可能会决定不支持它（import\*）。例如，sound/effects/\_\_init\_\_.py
+这个文件可能包括如下代码：
+\begin{minted}{python}
+ __all__ = ["echo", "surround", "reverse"]
+\end{minted}
+
+这意味着 from sound.effects import \* 语句会从 sound 包中导入以上三个已命名的子模块。
+
+如果没有定义\_\_all\_\_, from sound.effects import \* 语句不会从 sound.effects包中导入所有的子模块。
+无论包中定义多少命名，只能确定的是导入了sound.effects包（可能会运行\_\_init\_）
+每一个命名（以及明确导入的子模块）。同样也包括了前述的import语句从包中明确导入的子模块，考虑以下代码：
+\begin{minted}{python}
+  import sound.effects.echo
+  import sound.effects.surround
+  from sound.effects import *
+\end{minted}
+
+这个例子中, echo和surround 模块导入了当前的命名空间，这是因为执行 from...import语句时它们已经定义在sound.effects包中了（定义了\_\_all\_\_
+时也会同样工作）。
+
+尽管某些模块设计为使用 import *时它只导出符合某种规范/模式的命名，仍然不建议在产生代码中使用这种方法。
+
+记住， from package import specific\_submodule没有错误！事实上，除非导入的模块需要使用其它包中的同名子模块，否则这是推荐的写法。
 \subsubsection{包内引用}
+如果包中使用了子包结构（就像示例中的sound包），可以按绝对位置从相邻的包中引入子模块。例如，如果sound.filters.vovoder包需要使用 sound.effects
+包中的echo模块，它可以from sound.Effects import echo。
+
+你可以用这样的形式from module import name来写显示的相对位置导入。那些显式相对导入用点号标明关联导入当前和上级包。以surround模块为例，你可以这样用：
+\begin{minted}{python}
+from . import echo
+from .. import formats
+from ..filters import equalizer
+\end{minted}
+
+需要注意的是显式或隐式相对位置导入都基于当前模块的命名。因为主模块的名字总是``\_\_name\_\_'',Python应用程序的主模块应该总是用绝对导入。
+
+\subsubsection{多重目录中的包}
+包支持一个更为特殊的特性，\_\_path\_\_。在包的\_\_init\_\_.py文件代码执行之前，该变量初始化一个目录名列表。改变量可以修改，
+它作用于包中的子包和模块的搜索功能。
+
+这个功能可以用于扩展包中的模块集，不过它不常用。
+\section{输入输出}
+一个程序可以有几种输出方式：以人类可读的方式打印数据，或者写入一个文件供以后使用。文章将讨论几种可以能性。
+\subsection{格式化输出}
+我们有两种大相径庭地输出值方法：表达式语句和print()函数（第三种访求是使用文件对象的 write() 方法，标准文件输出可以参考 sys.stdout,
+详细内容参见手册）。
+
+通常，你想要对输出做更多的格式控制，而不是简单的打印使用空格分隔的值。有两种方法可以格式化你的输出：第一种方法是由你自己处理整个字符串，
+通过使用字符串切割和连接操作可以创建任何你想要的输出形式。string类型包含一些将字符串填充到指定列宽度的有用操作，随后就会讨论这些。
+第二种方法是使用str.format()方法 。
+
+标准模块string包括了一些操作，将字符串填充入给定列时，这些操作很有用。随后我们会讨论这部分内容。第二种方法是使用Template方法。
+
+当然，还有一个问题，如何将值转化为字符串？很幸运，Python有办法将任意值转为字符串：将它传入 repr()或str()函数。
+
+函数str()用于将值转化为适于阅读的形式，而repr()转化为供解释器读取的形式（如果没有等价的语法，则会发生SyntaxError异常）
+某对象没有适于人阅读的解释形式的话，str()会返回与repr()等同的值。很多类型，诸如数值或链表、字典这样的结构，
+针对各函数都有着统一的解读方式。字符串和浮点数，有着独特的解读方式。
+\begin{minted}{python}
+>>> s = 'Hello, world.'
+>>> str(s)
+'Hello, world.'
+>>> repr(s)
+"'Hello, world.'"
+>>> str(1/7)
+'0.14285714285714285'
+>>> x = 10 * 3.25
+>>> y = 200 * 200
+>>> s = 'The value of x is ' + repr(x) + ', and y is' + repr(y) + '...'
+>>> print(s)
+The value of x is 32.5, and y is40000...
+>>> # The repr() of a string adds string quotes and backlashes:
+... hello = 'hello, world\n'
+>>> hellos = repr(hello)
+>>> print(hellos)
+'hello, world\n'
+>>> # The argument to repr() may be any Python object:
+... repr((x, y, ('spam', 'eggs')))
+"(32.5, 40000, ('spam', 'eggs'))"
+\end{minted}
+
+有两种方式可以写平方和立方表：
+\begin{minted}{python}
+>>> for x in range(1, 11):
+...     print(repr(x).rjust(2), repr(x*x).rjust(3), end=' ')
+...     # Note use of 'end' on previous line
+...     print(repr(x*x*x).rjust(4))
+...
+ 1   1    1
+ 2   4    8
+ 3   9   27
+ 4  16   64
+ 5  25  125
+ 6  36  216
+ 7  49  343
+ 8  64  512
+ 9  81  729
+10 100 1000
+>>> for x in range(1, 11):
+...     print('{0:2d} {1:3d} {2:4d}'.format(x, x*x, x*x*x))
+...
+ 1   1    1
+ 2   4    8
+ 3   9   27
+ 4  16   64
+ 5  25  125
+ 6  36  216
+ 7  49  343
+ 8  64  512
+ 9  81  729
+10 100 1000
+\end{minted}
+
+(注意第一个例子，print()在每列之间加了一个空格，它总是在参数间加空格。)
+
+以上是一个str.rjust()方法的演示，它把字符串输出到一列，并通过向左侧填充空格来使其右对齐。
+类似的方法还有str.ljust()和str.center()。这些函数只是输出新的字符串，并不改变什么。如果输出
+的字符串太长，它们也不会截断它，而是原样输出，这会使你的输出格式变得混乱，不过总强过另一种选择（
+截断字符串），因为那样会产生错误的输出值（如果你确实需要截断它，可以使用切割操作，例如：x.lijust(n)
+[:n]）。
+
+还有另一个方法，str.zfill()它用于向数值的字符串表达左侧填充0。该函数可以正确理解正负号：
+\begin{minted}{python}
+>>> '12'.zfill(5)
+'00012'
+>>> '-3.14'.zfill(7)
+'-003.14'
+>>> '3.14159265359'.zfill(5)
+'3.14159265359'
+\end{minted}
+
+方法 str.format()的基本用法如下：
+\begin{minted}{python}
+>>> print('We are the {} who say "{}!"'.format('knights', 'Ni'))
+We are the knights who say "Ni!"
+\end{minted}
+
+大括号和其中的字符会被替换成传入str.format()的参数。大括号中的数值指明使用传入str.format()
+方法的对象中的哪一个：
+\begin{minted}{python}
+>>> print('{0} and {1}'. format('spam', 'eggs'))
+spam and eggs
+>>> print('{1} and {0}'. format('spam', 'eggs'))
+eggs and spam
+\end{minted}
+
+如果在str.format()调用时使用关键字参数，可以通过参数名来引用值:
+\begin{minted}{python}
+>>> print('This {food} is {adjective}.'.format(
+...     food='spam', adjective='absolutely horrible'))
+This spam is absolutely horrible.
+\end{minted}
+
+位置参数和关键字参数可以随意组合：
+\begin{minted}{python}
+>>> print('The story of {0}, {1}, and {other}.'.format('Bill', 'Manfred', other='Georg'))
+The story of Bill, Manfred, and Georg.
+\end{minted}
+
+`!a'(应用ascii()), `!s'(应用str())和 `!r'(应用repr())可以在格式化之前转换值：
+\begin{minted}{python}
+>>> import math
+>>> print('The value of PI is approximately {}.'.format(math.pi))
+The value of PI is approximately 3.141592653589793.
+>>> print('The value of PI is approximately {!r}.'.format(math.pi))
+The value of PI is approximately 3.141592653589793.
+\end{minted}
+
+字段名后允许可选的`:'和格式指令。这允许对值的格式化加以更深入的控制。下列将P转为三位精度。
+\begin{minted}{python}
+>>> print('The value of PI is approximately {0:.3f}.'.format(math.pi))
+The value of PI is approximately 3.142.
+\end{minted}
+
+在字段后的`:'后面加一个整数会限定该字段的最小宽度，这在美化表格时很有用：
+\begin{minted}{python}
+>>> table = {'Sjoerd': 4127, 'Jack': 4098, 'Dcab': 7678}
+>>> for name, phone in table.items():
+...     print('{0:10} ==> {1:10d}'.format(name, phone))
+...
+Sjoerd     ==>       4127
+Jack       ==>       4098
+Dcab       ==>       7678
+\end{minted}
+
+如果你有个实在是很长的格式化字符串，不想分割它。如果你可以用命名来引用被格式化的变量而不是位置就好了。
+有个简单的方法，可以传入一个字典，用中括号（`[]'）访问它的键：
+\begin{minted}{python}
+>>> table = {'Sjoerd': 4127, 'Jack': 4098, 'Dcab': 8637678}
+>>> print('Jack: {Jack:d}; Sjoerd: {Sjoerd:d}; Dcab: {Dcab:d}'.format(**table))
+Jack: 4098; Sjoerd: 4127; Dcab: 8637678
+\end{minted}
+
+这种方式与新的内置函数vars()组合使用非常有效。该函数返回包含所有局部变量的字典。
+
+要更进一步了解字符串格式化方法str.format(),参见格式字符串语法。
+
+\subsubsection{旧式的字符串格式化}
+操作符\%也可用于字符串格式化。它以类似sprintf()-style的方式解析左参数，将右参数应用于此，得到格式化操作生成的字符串，例如：
+\begin{minted}{python}
+>>> import math
+>>> print('The value of PI is approximately %5.3f.'% math.pi)
+The value of PI is approximately 3.142.
+\end{minted}
+
+\subsection{文件读写}
+函数open()返回文件对象，通常的用法需要两个参数：open(filename, mode)。
+\begin{minted}{python}
+>>> f = open('workfile', 'w')
+\end{minted}
+
+第一个参数是一个含有文件名的字符串。第二个参数也是一个字符串，含有描述如何使用该文件的几个字符。
+mode为`r'时表示只是读取文件；`w'表示只是写入文件（已经存在的同名文件将被删掉）；`a'表示打开文件进行
+追加，写入到文件中的任何数据将自动添加到末尾。`r+'表示打开文件进行读取和写入。mode参数是可选的，默认为`r'。
+
+通常，文件以文本打开，这意味着，你从文件读出和向文件写入的字符串会被特定的编码方式（默认是UTF-8）
+编码。模式后面的`b'以二进制模式打开文件：数据会以字节对象的形式读出和写入。这种模式应该用于所有不包含文本的文件。
+
+在文本模式下，读取时默认会将平台有关的行结束符（Unix上是 \textbackslash n , Windows上是 \textbackslash r\textbackslash n）转换为 \textbackslash n。
+在文本模式下写入时，默认会将出现的 \textbackslash n 转换成平台有关的行结束符。
+这种暗地里的修改对 ASCII 文本文件没有问题，但会损坏 JPEG 或 EXE 这样的二进制文件中的数据。使用二进制模式读写此类文件时要特别小心。
+
+\subsubsection{文件对象方法}
+示例默认文件对象f已经创建。
+
+药都取文件内容，需要调用f.read(size),该方法读取若干数量的数据并以字符串形式返回其内容，
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
